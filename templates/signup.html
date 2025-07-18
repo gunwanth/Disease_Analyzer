@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%); /* Black background */
+            overflow: hidden;
+            perspective: 1500px; /* Enables 3D space */
+        }
+
+        .container {
+            width: 400px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            transform-style: preserve-3d;
+            position: relative;
+            z-index: 10; /* Above background */
+            transition: box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 2rem;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            transition: transform 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        h2:hover {
+            transform: translateZ(20px);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        input:focus {
+            transform: scale(1.05) translateZ(10px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #27ae60; /* Green color preserved */
+            color: white;
+            border: none;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            transform: translateZ(20px);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            transform: translateZ(10px);
+        }
+
+        button:hover::before {
+            opacity: 0.2;
+        }
+
+        .switch {
+            margin-top: 10px;
+            color: white;
+            cursor: pointer;
+            display: block;
+            text-decoration: underline;
+            transition: transform 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        .switch:hover {
+            transform: translateZ(15px);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Flash Message Styling */
+        .flash-message {
+            color: white;
+            background: rgba(255, 0, 0, 0.8);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform-style: preserve-3d;
+        }
+
+        /* Starry background effect */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(white 1px, transparent 1px),
+                radial-gradient(white 1px, transparent 1px);
+            background-size: 50px 50px;
+            background-position: 0 0, 25px 25px;
+            opacity: 0.1;
+            z-index: 1; /* Below everything else */
+        }
+    </style>
+</head>
+<body>
+    <!-- Sign Up Container -->
+    <div class="container">
+        <h2>📝 Sign Up</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message">
+                    {{ messages[0] }}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <form action="/signup" method="POST">
+            <input type="text" name="username" placeholder="Username" required><br>
+            <input type="email" name="email" placeholder="Email" required><br>
+            <input type="password" name="password" placeholder="Password" required><br>
+            <button type="submit" class="button-3d">Sign Up</button>
+        </form>
+        <span class="switch" onclick="window.location.href='/login'">Already have an account? Login here</span>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Enhanced 3D Animation for Container
+            const container = document.querySelector('.container');
+            container.addEventListener('mousemove', (e) => {
+                const rect = container.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const rotateX = (y - centerY) / 15; // Increased sensitivity
+                const rotateY = -(x - centerX) / 15;
+
+                container.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(60px) scale(1.02)`;
+            });
+
+            container.addEventListener('mouseleave', () => {
+                container.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0px) scale(1)';
+            });
+
+            // Enhanced 3D Button Hover and Click Animation
+            const button = document.querySelector('button');
+            button.addEventListener('mousemove', (e) => {
+                const rect = button.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const rotateX = (y - centerY) / 10; // More pronounced tilt
+                const rotateY = -(x - centerX) / 10;
+
+                button.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(60px) scale(1.05)`;
+            });
+
+            button.addEventListener('mouseleave', () => {
+                button.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0px) scale(1)';
+            });
+
+            button.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent immediate form submission
+                const form = this.closest('form');
+
+                anime({
+                    targets: this,
+                    scale: [1, 0.9, 1.1, 0], // Pulse effect before fade
+                    rotateX: [0, 60],
+                    rotateY: [0, 60],
+                    translateZ: [60, 300],
+                    opacity: [1, 0],
+                    duration: 700, // Slightly longer for drama
+                    easing: 'easeInOutBack',
+                    complete: () => {
+                        form.submit(); // Submit form after animation
+                    }
+                });
+            });
+
+            // Initial Load Animations for Container
+            anime({
+                targets: '.container',
+                translateY: [-150, 0],
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                rotateX: [-45, 0],
+                duration: 1200,
+                easing: 'easeOutElastic(1, .5)' // Stronger elastic bounce
+            });
+
+            // Enhanced Load Animations for Form Elements
+            anime({
+                targets: '.container input',
+                translateY: [120, 0],
+                translateZ: [0, 10],
+                opacity: [0, 1],
+                rotateX: [-30, 0],
+                scale: [0.9, 1],
+                duration: 1000,
+                delay: anime.stagger(150, {start: 400}),
+                easing: 'easeOutElastic(1, .6)'
+            });
+
+            anime({
+                targets: '.container button',
+                translateY: [120, 0],
+                translateZ: [0, 20],
+                opacity: [0, 1],
+                rotateX: [-30, 0],
+                scale: [0.9, 1],
+                duration: 1000,
+                delay: 700,
+                easing: 'easeOutElastic(1, .6)'
+            });
+
+            anime({
+                targets: '.container .switch',
+                translateY: [120, 0],
+                translateZ: [0, 10],
+                opacity: [0, 1],
+                rotateX: [-30, 0],
+                scale: [0.9, 1],
+                duration: 1000,
+                delay: 900,
+                easing: 'easeOutElastic(1, .6)'
+            });
+
+            // Flash Message Animation (if present)
+            anime({
+                targets: '.flash-message',
+                translateY: [-50, 0],
+                opacity: [0, 1],
+                rotateX: [-20, 0],
+                duration: 800,
+                easing: 'easeOutBack'
+            });
+        });
+    </script>
+</head>
+</html>

@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Prediction System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #7209b7;
+            --accent-color: #4cc9f0;
+            --dark-color: #242038;
+            --light-color: #f8f9fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: var(--light-color);
+            perspective: 1500px;
+            overflow-x: hidden;
+        }
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(125deg, #080808, #1a1a1a);
+        }
+
+        .gradient-bg {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle at center, 
+                rgba(67, 97, 238, 0.15) 0%, 
+                rgba(114, 9, 183, 0.12) 30%, 
+                rgba(0, 0, 0, 0) 70%);
+            animation: rotateGradient 25s infinite linear;
+        }
+
+        .grid {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background-image: 
+                linear-gradient(rgba(76, 201, 240, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(76, 201, 240, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            animation: gridMove 15s infinite linear;
+        }
+
+        .particles-3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -3;
+        }
+
+        .particle-3d {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--accent-color);
+            border-radius: 50%;
+        }
+
+        .scene {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100vw;
+            padding: 20px;
+            transform-style: preserve-3d;
+        }
+
+        .container {
+            background: rgba(20, 20, 30, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2),
+                       0 0 30px rgba(67, 97, 238, 0.1);
+            padding: 40px;
+            width: 85%;
+            max-width: 800px;
+            transform-style: preserve-3d;
+            animation: containerFloat 8s ease-in-out infinite alternate;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            animation: titleGlow 4s ease-in-out infinite alternate;
+            transform: translateZ(50px);
+            margin-bottom: 30px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            font-weight: 600;
+            animation: subtitlePulse 6s ease-in-out infinite;
+            transform: translateZ(30px);
+            margin: 20px 0;
+        }
+
+        .input-container {
+            margin-bottom: 25px;
+            position: relative;
+            text-align: left;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+            opacity: 0;
+            animation: featureAppear 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .input-container:nth-child(1) { animation-delay: 0.3s; }
+        .input-container:nth-child(2) { animation-delay: 0.6s; }
+        .input-container:nth-child(3) { animation-delay: 0.9s; }
+        .input-container:nth-child(4) { animation-delay: 1.2s; }
+
+        .input-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .input-container input {
+            padding: 12px;
+            width: 300px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(36, 32, 56, 0.7);
+            color: white;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+
+        .input-container input:hover {
+            transform: translateZ(20px);
+            border-color: var(--accent-color);
+            box-shadow: 0 5px 15px rgba(76, 201, 240, 0.2);
+        }
+
+        .dropdown {
+            position: absolute;
+            width: 300px;
+            background: rgba(36, 32, 56, 0.9);
+            border: 1px solid var(--primary-color);
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+            border-radius: 10px;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+            transform: translateZ(30px);
+        }
+
+        .dropdown-item {
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dropdown-item:hover {
+            background: rgba(76, 201, 240, 0.2);
+            transform: translateX(5px);
+            color: var(--accent-color);
+        }
+
+        select {
+            padding: 12px;
+            width: 300px;
+            border-radius: 10px;
+            background: rgba(36, 32, 56, 0.7);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin: 20px 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        select:hover {
+            transform: translateZ(20px);
+            border-color: var(--accent-color);
+            box-shadow: 0 5px 15px rgba(76, 201, 240, 0.2);
+        }
+
+        button[type="submit"] {
+            padding: 15px 35px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2),
+                       0 5px 10px rgba(67, 97, 238, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateZ(30px) scale(1.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3),
+                       0 5px 25px rgba(76, 201, 240, 0.4);
+        }
+
+        button[type="submit"]::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 100%;
+            top: 0;
+            left: -100px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: skewX(-25deg);
+            transition: all 0.5s ease;
+        }
+
+        button[type="submit"]:hover::after {
+            left: 110%;
+            transition: all 0.7s ease;
+        }
+
+        #result {
+            background: rgba(36, 32, 56, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+            transform: translateZ(20px);
+        }
+
+        .nav-buttons {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            perspective: 1000px;
+        }
+
+        .nav-buttons button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-buttons button:hover {
+            transform: translateZ(30px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        #result-buttons {
+            margin-top: 20px;
+            transform: translateZ(20px);
+        }
+
+        #disease-info-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #disease-info-btn:hover {
+            transform: translateZ(30px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        #disease-info-btn::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 100%;
+            top: 0;
+            left: -100px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: skewX(-25deg);
+            transition: all 0.5s ease;
+        }
+
+        #disease-info-btn:hover::after {
+            left: 110%;
+            transition: all 0.7s ease;
+        }
+
+        @keyframes rotateGradient {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+        }
+
+        @keyframes containerFloat {
+            0% { transform: translateZ(0) translateY(0); }
+            50% { transform: translateZ(20px) translateY(-10px); }
+            100% { transform: translateZ(0) translateY(0); }
+        }
+
+        @keyframes titleGlow {
+            0% { text-shadow: 0 0 10px rgba(76, 201, 240, 0.1); }
+            50% { text-shadow: 0 0 30px rgba(76, 201, 240, 0.4); }
+            100% { text-shadow: 0 0 10px rgba(76, 201, 240, 0.1); }
+        }
+
+        @keyframes subtitlePulse {
+            0% { opacity: 0.8; transform: translateZ(30px) scale(1); }
+            50% { opacity: 1; transform: translateZ(40px) scale(1.05); }
+            100% { opacity: 0.8; transform: translateZ(30px) scale(1); }
+        }
+
+        @keyframes featureAppear {
+            0% { opacity: 0; transform: translateZ(-50px) translateX(-20px); }
+            100% { opacity: 1; transform: translateZ(0) translateX(0); }
+        }
+
+        @keyframes floatIn3D {
+            0%, 100% { transform: translateZ(0) translateY(0) rotate(0deg); }
+            25% { transform: translateZ(100px) translateY(-50px) rotate(5deg); }
+            50% { transform: translateZ(50px) translateY(20px) rotate(-2deg); }
+            75% { transform: translateZ(150px) translateY(-30px) rotate(3deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div class="gradient-bg"></div>
+        <div class="grid"></div>
+    </div>
+
+    <div class="particles-3d" id="particles-3d"></div>
+
+    <div class="scene">
+        <div class="container">
+            <h1>Disease Prediction System</h1>
+
+            <form onsubmit="predictDisease(event)">
+                <label for="model"><b>Select a Model:</b></label>
+                <select id="model">
+                    {% for model in models %}
+                        <option value="{{ model }}">{{ model }}</option>
+                    {% endfor %}
+                </select>
+
+                <h3>Enter Symptoms:</h3>
+
+                <div class="input-container">
+                    <label for="symptom1">Symptom 1:</label>
+                    <input type="text" id="symptom1" onkeyup="filterSymptoms('symptom1', 'dropdown1')" autocomplete="off">
+                    <div id="dropdown1" class="dropdown"></div>
+                </div>
+
+                <div class="input-container">
+                    <label for="symptom2">Symptom 2:</label>
+                    <input type="text" id="symptom2" onkeyup="filterSymptoms('symptom2', 'dropdown2')" autocomplete="off">
+                    <div id="dropdown2" class="dropdown"></div>
+                </div>
+
+                <div class="input-container">
+                    <label for="symptom3">Symptom 3:</label>
+                    <input type="text" id="symptom3" onkeyup="filterSymptoms('symptom3', 'dropdown3')" autocomplete="off">
+                    <div id="dropdown3" class="dropdown"></div>
+                </div>
+
+                <div class="input-container">
+                    <label for="symptom4">Symptom 4:</label>
+                    <input type="text" id="symptom4" onkeyup="filterSymptoms('symptom4', 'dropdown4')" autocomplete="off">
+                    <div id="dropdown4" class="dropdown"></div>
+                </div>
+
+                <button type="submit">Predict</button>
+            </form>
+
+            <h2 id="result"></h2>
+            <div id="result-buttons" class="nav-buttons" style="display: none;">
+                <button id="disease-info-btn" onclick="viewDiseaseInfo()">
+                    View Precautions & Treatment
+                </button>
+            </div>
+
+            <div class="nav-buttons">
+                <button onclick="window.location.href='/metrics'">📊 View Model Metrics</button>
+                <button onclick="window.location.href='/dataset_analysis'">📊 View Dataset Analysis</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allSymptoms = JSON.parse('{{ symptoms | tojson | safe }}');
+
+        function filterSymptoms(inputId, dropdownId) {
+            let input = document.getElementById(inputId);
+            let dropdown = document.getElementById(dropdownId);
+            let filter = input.value.toLowerCase();
+            dropdown.innerHTML = ""; 
+
+            if (filter.length === 0) {
+                dropdown.style.display = "none";
+                return;
+            }
+
+            let matches = allSymptoms.filter(symptom => symptom.toLowerCase().includes(filter));
+
+            if (matches.length === 0) {
+                dropdown.style.display = "none";
+                return;
+            }
+
+            matches.forEach(symptom => {
+                let item = document.createElement("div");
+                item.classList.add("dropdown-item");
+                item.innerText = symptom;
+                item.onclick = function() {
+                    input.value = symptom;
+                    dropdown.style.display = "none";
+                };
+                dropdown.appendChild(item);
+            });
+
+            dropdown.style.display = "block";
+        }
+
+        function predictDisease(event) {
+            event.preventDefault();
+
+            let selectedModel = document.getElementById("model").value;
+            let symptom1 = document.getElementById("symptom1").value.trim();
+            let symptom2 = document.getElementById("symptom2").value.trim();
+            let symptom3 = document.getElementById("symptom3").value.trim();
+            let symptom4 = document.getElementById("symptom4").value.trim();
+
+            let selectedSymptoms = [symptom1, symptom2, symptom3, symptom4].filter(symptom => symptom !== "");
+
+            if (selectedSymptoms.length === 0) {
+                alert("Please enter at least one symptom.");
+                return;
+            }
+
+            fetch("/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ model: selectedModel, symptoms: selectedSymptoms })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("🔍 API Response:", data);
+
+                let resultDiv = document.getElementById("result");
+                let resultButtons = document.getElementById("result-buttons");
+                let diseaseInfoBtn = document.getElementById("disease-info-btn");
+
+                if (data.error) {
+                    resultDiv.innerHTML = `<b style="color:red;">Error:</b> ${data.error}`;
+                    resultButtons.style.display = "none";
+                } else {
+                    resultDiv.innerHTML = `
+                        <b style="color:green;">Predicted Disease:</b> ${data.disease} <br> 
+                        <b>Model Used:</b> ${data.model} <br>
+                        <b>Selected Symptoms:</b> ${selectedSymptoms.join(", ")}
+                    `;
+                    resultButtons.style.display = "flex";
+                    diseaseInfoBtn.setAttribute('data-disease', data.disease);
+                }
+            })
+            .catch(error => {
+                console.error("⚠ API Error:", error);
+                document.getElementById("result").innerText = "Failed to fetch prediction.";
+                document.getElementById("result-buttons").style.display = "none";
+            });
+        }
+
+        function viewDiseaseInfo() {
+            const diseaseInfoBtn = document.getElementById("disease-info-btn");
+            const diseaseName = diseaseInfoBtn.getAttribute('data-disease');
+            window.location.href = `/disease-info/${encodeURIComponent(diseaseName)}`;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const container = document.querySelector('.container');
+            const inputContainers = document.querySelectorAll('.input-container');
+            const navButtons = document.querySelectorAll('.nav-buttons button');
+            const predictButton = document.querySelector('button[type="submit"]');
+            const title = document.querySelector('h1');
+            const subtitle = document.querySelector('h3');
+            const diseaseInfoBtn = document.getElementById('disease-info-btn');
+
+            document.addEventListener('mousemove', (e) => {
+                const xAxis = (window.innerWidth / 2 - e.pageX) / 45;
+                const yAxis = (window.innerHeight / 2 - e.pageY) / 45;
+                
+                container.style.transform = `rotateY(${xAxis}deg) rotateX(${-yAxis}deg) translateZ(10px)`;
+                title.style.transform = `translateZ(50px) translateX(${-xAxis}px) translateY(${-yAxis}px)`;
+                subtitle.style.transform = `translateZ(30px) translateX(${-xAxis * 0.5}px) translateY(${-yAxis * 0.5}px)`;
+                
+                inputContainers.forEach((container, index) => {
+                    const offset = (index + 1) * 5;
+                    container.style.transform = `translateZ(${20 + offset}px) translateX(${-xAxis * 0.8}px) translateY(${-yAxis * 0.8}px)`;
+                });
+            });
+
+            document.addEventListener('mouseleave', () => {
+                container.style.transform = 'rotateY(0deg) rotateX(0deg) translateZ(0)';
+                title.style.transform = 'translateZ(50px)';
+                subtitle.style.transform = 'translateZ(30px)';
+                inputContainers.forEach(container => {
+                    container.style.transform = 'translateZ(0) translateX(0)';
+                });
+            });
+
+            inputContainers.forEach(container => {
+                const input = container.querySelector('input');
+                
+                container.addEventListener('mousemove', (e) => {
+                    const rect = container.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = (y - centerY) / 20;
+                    const rotateY = -(x - centerX) / 20;
+                    
+                    input.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
+                });
+                
+                container.addEventListener('mouseleave', () => {
+                    input.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0px)';
+                });
+            });
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const href = this.getAttribute('onclick').match(/'([^']*)'/)[1];
+                    
+                    anime({
+                        targets: this,
+                        scale: [1, 0.8],
+                        rotateX: [0, 45],
+                        rotateY: [0, 45],
+                        translateZ: [50, 200],
+                        opacity: [1, 0],
+                        duration: 500,
+                        easing: 'easeInBack',
+                        complete: () => {
+                            window.location.href = href;
+                        }
+                    });
+                });
+            });
+
+            anime({
+                targets: '.input-container',
+                translateY: [100, 0],
+                opacity: [0, 1],
+                rotateX: [-30, 0],
+                duration: 1000,
+                delay: anime.stagger(200, {start: 500}),
+                easing: 'easeOutElastic(1, .6)'
+            });
+
+            predictButton.addEventListener('mouseenter', function() {
+                anime({
+                    targets: this,
+                    scale: 1.1,
+                    rotate: [0, 5],
+                    duration: 300,
+                    easing: 'easeOutQuad'
+                });
+            });
+
+            predictButton.addEventListener('mouseleave', function() {
+                anime({
+                    targets: this,
+                    scale: 1,
+                    rotate: 0,
+                    duration: 300,
+                    easing: 'easeOutQuad'
+                });
+            });
+
+            diseaseInfoBtn.addEventListener('mouseenter', function() {
+                anime({
+                    targets: this,
+                    scale: 1.1,
+                    rotate: [0, 5],
+                    duration: 300,
+                    easing: 'easeOutQuad'
+                });
+            });
+
+            diseaseInfoBtn.addEventListener('mouseleave', function() {
+                anime({
+                    targets: this,
+                    scale: 1,
+                    rotate: 0,
+                    duration: 300,
+                    easing: 'easeOutQuad'
+                });
+            });
+
+            diseaseInfoBtn.addEventListener('click', function() {
+                anime({
+                    targets: this,
+                    scale: [1, 0.8],
+                    rotateX: [0, 45],
+                    rotateY: [0, 45],
+                    translateZ: [50, 200],
+                    opacity: [1, 0],
+                    duration: 500,
+                    easing: 'easeInBack',
+                    complete: () => {
+                        viewDiseaseInfo();
+                    }
+                });
+            });
+
+            createParticles3D();
+        });
+
+        function createParticles3D() {
+            const container = document.getElementById('particles-3d');
+            const particleCount = 100;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle-3d';
+                
+                const size = Math.random() * 3 + 1;
+                const xPos = Math.random() * 100;
+                const yPos = Math.random() * 100;
+                const zPos = Math.random() * 500 - 250;
+                const opacity = Math.random() * 0.6 + 0.2;
+                
+                const colors = ['rgba(67, 97, 238,', 'rgba(114, 9, 183,', 'rgba(76, 201, 240,'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${xPos}vw`;
+                particle.style.top = `${yPos}vh`;
+                particle.style.background = `${color} ${opacity})`;
+                particle.style.boxShadow = `0 0 ${size * 2}px ${color} 1)`;
+                
+                const duration = Math.random() * 50 + 30;
+                const delay = Math.random() * 10;
+                
+                particle.style.transform = `translateZ(${zPos}px)`;
+                particle.style.animation = `floatIn3D ${duration}s infinite ${delay}s`;
+                
+                container.appendChild(particle);
+            }
+        }
+    </script>
+</body>
+</html>

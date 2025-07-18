@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Evaluation Metrics</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+</head>
+<body>
+    <div class="scene">
+        <div class="container">
+            <h1 class="title">Model Evaluation Metrics</h1>
+
+            <div class="metrics-grid">
+                {% for model, metrics in model_metrics.items() %}
+                <div class="model-wrapper">
+                    <div class="model-card-3d">
+                        <div class="model-content">
+                            <h2>{{ model }}</h2>
+                            <div class="metrics-list">
+                                <p><strong>Accuracy:</strong> {{ metrics['accuracy'] | round(4) }}</p>
+                                <p><strong>Precision:</strong> {{ metrics['precision'] | round(4) }}</p>
+                                <p><strong>Recall:</strong> {{ metrics['recall'] | round(4) }}</p>
+                                <p><strong>F1 Score:</strong> {{ metrics['f1_score'] | round(4) }}</p>
+                            </div>
+
+                            <!-- Load graph from saved file -->
+                            <img src="{{ url_for('static', filename='graphs/' + model.lower().replace(' ', '_') + '.png') }}" 
+                                 alt="Graph for {{ model }}" 
+                                 class="model-graph"
+                                 onerror="this.style.display='none'">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="back-button-wrapper">
+                <div class="back-button-3d" onclick="window.location.href='/'">
+                    <div class="back-button-content">Back to Prediction</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // 3D Model Card hover and interaction
+            const modelWrappers = document.querySelectorAll('.model-wrapper');
+            
+            modelWrappers.forEach(wrapper => {
+                const modelCard = wrapper.querySelector('.model-card-3d');
+                
+                // Hover effect
+                wrapper.addEventListener('mousemove', (e) => {
+                    const rect = wrapper.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = (y - centerY) / 20;
+                    const rotateY = -(x - centerX) / 20;
+                    
+                    modelCard.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(30px)`;
+                });
+                
+                // Reset position when mouse leaves
+                wrapper.addEventListener('mouseleave', () => {
+                    modelCard.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0px)';
+                });
+            });
+
+            // Back button interaction
+            const backButton = document.querySelector('.back-button-3d');
+            backButton.addEventListener('click', function() {
+                anime({
+                    targets: this,
+                    scale: [1, 0.8],
+                    rotateX: [0, 45],
+                    rotateY: [0, 45],
+                    translateZ: [50, 200],
+                    opacity: [1, 0],
+                    duration: 500,
+                    easing: 'easeInBack',
+                    complete: () => {
+                        window.location.href = '/';
+                    }
+                });
+            });
+
+            // Initial load animations
+            anime({
+                targets: '.model-wrapper',
+                translateY: [100, 0],
+                opacity: [0, 1],
+                rotateX: [-30, 0],
+                duration: 1000,
+                delay: anime.stagger(200, {start: 500}),
+                easing: 'easeOutElastic(1, .6)'
+            });
+        });
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            perspective: 1500px;
+            overflow: hidden;
+        }
+
+        .scene {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            max-width: 1200px;
+            width: 90%;
+        }
+
+        .title {
+            font-size: 3rem;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            perspective: 1000px;
+            margin-bottom: 30px;
+        }
+
+        .model-wrapper {
+            perspective: 1000px;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .model-card-3d {
+            background: linear-gradient(145deg, rgba(106, 17, 203, 0.8) 0%, rgba(37, 117, 252, 0.8) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .model-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .model-content h2 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .metrics-list p {
+            margin: 10px 0;
+            opacity: 0.9;
+        }
+
+        .model-graph {
+            max-width: 100%;
+            height: auto;
+            margin-top: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .back-button-wrapper {
+            display: flex;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .back-button-3d {
+            background: linear-gradient(145deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .back-button-content {
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Starry background effect */
+        .scene::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(white 1px, transparent 1px),
+                radial-gradient(white 1px, transparent 1px);
+            background-size: 50px 50px;
+            background-position: 0 0, 25px 25px;
+            opacity: 0.1;
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Features</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #7209b7;
+            --accent-color: #4cc9f0;
+            --dark-color: #242038;
+            --light-color: #f8f9fa;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            background: #000;
+            color: var(--light-color);
+            perspective: 1500px;
+        }
+        
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+            background: linear-gradient(125deg, #080808, #1a1a1a);
+        }
+        
+        .gradient-bg {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle at center, 
+                rgba(67, 97, 238, 0.15) 0%, 
+                rgba(114, 9, 183, 0.12) 30%, 
+                rgba(0, 0, 0, 0) 70%);
+            animation: rotateGradient 25s infinite linear;
+            z-index: -2;
+        }
+        
+        .grid {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background-image: 
+                linear-gradient(rgba(76, 201, 240, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(76, 201, 240, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            animation: gridMove 15s infinite linear;
+            z-index: -1;
+        }
+        
+        .content-container {
+            background: rgba(20, 20, 30, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2),
+                         0 0 30px rgba(67, 97, 238, 0.1),
+                         inset 0 0 15px rgba(76, 201, 240, 0.05);
+            padding: 40px;
+            width: 85%;
+            max-width: 800px;
+            transform-style: preserve-3d;
+            animation: containerFloat 8s ease-in-out infinite alternate;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border: 2px solid var(--accent-color);
+            border-radius: 22px;
+            opacity: 0.3;
+            animation: pulseBorder 4s infinite ease-in-out;
+            z-index: -1;
+        }
+        
+        h1, h2 {
+            transform-style: preserve-3d;
+            position: relative;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text; /* Standard property added for compatibility */
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            animation: titleGlow 4s ease-in-out infinite alternate;
+            transform: translateZ(50px);
+            letter-spacing: 2px;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 25%;
+            width: 50%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            border-radius: 2px;
+            animation: lineGrow 4s ease-in-out infinite alternate;
+        }
+        
+        h2 {
+            font-size: 2rem;
+            color: var(--accent-color);
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            animation: subtitlePulse 6s ease-in-out infinite;
+            transform: translateZ(30px);
+        }
+        
+        .features-container {
+            position: relative;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        
+        ul {
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
+            perspective: 800px;
+            transform-style: preserve-3d;
+        }
+        
+        li {
+            margin: 25px 0;
+            padding: 20px 25px;
+            border-radius: 15px;
+            background: rgba(36, 32, 56, 0.7);
+            border-left: 4px solid var(--primary-color);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2),
+                       0 5px 15px rgba(67, 97, 238, 0.1);
+            transform-style: preserve-3d;
+            transform: translateZ(0) translateX(0);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: featureAppear 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        
+        li:nth-child(1) { animation-delay: 0.3s; }
+        li:nth-child(2) { animation-delay: 0.6s; }
+        li:nth-child(3) { animation-delay: 0.9s; }
+        li:nth-child(4) { animation-delay: 1.2s; }
+        
+        li:hover {
+            transform: translateZ(40px) translateX(10px) rotateY(5deg);
+            background: rgba(46, 42, 66, 0.9);
+            border-left: 4px solid var(--accent-color);
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3),
+                       0 10px 25px rgba(76, 201, 240, 0.2);
+        }
+        
+        li::before {
+            content: attr(data-emoji);
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+        
+        li:hover::before {
+            left: 15px;
+            opacity: 1;
+            animation: emojiBounce 0.5s ease-in-out;
+        }
+        
+        li .emoji {
+            display: inline-block;
+            font-size: 2rem;
+            margin-right: 15px;
+            position: relative;
+            z-index: 2;
+            transition: all 0.5s ease;
+        }
+        
+        li:hover .emoji {
+            transform: scale(1.2) rotate(360deg);
+            text-shadow: 0 0 20px rgba(76, 201, 240, 0.7);
+            animation: emojiSpin 0.5s ease-in-out;
+        }
+        
+        li .text {
+            display: inline-block;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+        
+        li:hover .text {
+            transform: translateX(5px);
+            color: var(--accent-color);
+        }
+        
+        li::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 100%;
+            top: 0;
+            left: -100px;
+            background: linear-gradient(to right, 
+                transparent, 
+                rgba(255, 255, 255, 0.2), 
+                transparent);
+            transform: skewX(-25deg);
+            transition: all 0.5s ease;
+        }
+        
+        li:hover::after {
+            left: 110%;
+            transition: all 0.7s ease;
+        }
+        
+        .button-container {
+            margin-top: 40px;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+        
+        button {
+            padding: 15px 35px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2),
+                       0 5px 10px rgba(67, 97, 238, 0.2);
+            animation: buttonFloat 3s ease-in-out infinite alternate;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button:hover {
+            transform: translateZ(30px) scale(1.1) rotateX(10deg);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3),
+                       0 5px 25px rgba(76, 201, 240, 0.4);
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, 
+                rgba(255, 255, 255, 0) 0%, 
+                rgba(255, 255, 255, 0.1) 50%, 
+                rgba(255, 255, 255, 0) 100%);
+            transform: rotate(45deg);
+            animation: buttonShine 3s infinite linear;
+            z-index: 1;
+        }
+        
+        button::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--accent-color);
+            animation: buttonLine 2s infinite alternate;
+        }
+        
+        button span {
+            position: relative;
+            z-index: 2;
+        }
+
+        .button-container::before {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 1px dashed var(--accent-color);
+            opacity: 0.3;
+            animation: orbitRing 10s infinite linear;
+            z-index: -1;
+        }
+        
+        .particles-3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -3;
+        }
+        
+        .particle-3d {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            z-index: -3;
+        }
+
+        @keyframes rotateGradient {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+        }
+        
+        @keyframes containerFloat {
+            0% { transform: translateZ(0) translateY(0); }
+            50% { transform: translateZ(20px) translateY(-10px); }
+            100% { transform: translateZ(0) translateY(0); }
+        }
+        
+        @keyframes titleGlow {
+            0% { text-shadow: 0 0 10px rgba(76, 201, 240, 0.1); }
+            50% { text-shadow: 0 0 30px rgba(76, 201, 240, 0.4); }
+            100% { text-shadow: 0 0 10px rgba(76, 201, 240, 0.1); }
+        }
+        
+        @keyframes lineGrow {
+            0% { width: 10%; left: 45%; opacity: 0.7; }
+            50% { width: 50%; left: 25%; opacity: 1; }
+            100% { width: 10%; left: 45%; opacity: 0.7; }
+        }
+        
+        @keyframes subtitlePulse {
+            0% { opacity: 0.8; transform: translateZ(30px) scale(1); }
+            50% { opacity: 1; transform: translateZ(40px) scale(1.05); }
+            100% { opacity: 0.8; transform: translateZ(30px) scale(1); }
+        }
+        
+        @keyframes featureAppear {
+            0% { opacity: 0; transform: translateZ(-50px) translateX(-20px) rotateX(-20deg); }
+            100% { opacity: 1; transform: translateZ(0) translateX(0) rotateX(0deg); }
+        }
+        
+        @keyframes buttonFloat {
+            0% { transform: translateZ(0) translateY(0); }
+            100% { transform: translateZ(20px) translateY(-5px); }
+        }
+        
+        @keyframes buttonShine {
+            0% { transform: rotate(45deg) translateX(-100%); }
+            100% { transform: rotate(45deg) translateX(100%); }
+        }
+        
+        @keyframes buttonLine {
+            0% { width: 0; left: 50%; }
+            50% { width: 100%; left: 0; }
+            100% { width: 0; left: 0; }
+        }
+        
+        @keyframes floatIn3D {
+            0%, 100% { transform: translateZ(0) translateY(0) rotate(0deg); }
+            25% { transform: translateZ(100px) translateY(-50px) rotate(5deg); }
+            50% { transform: translateZ(50px) translateY(20px) rotate(-2deg); }
+            75% { transform: translateZ(150px) translateY(-30px) rotate(3deg); }
+        }
+
+        @keyframes pulseBorder {
+            0% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.02); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 0.3; }
+        }
+
+        @keyframes emojiBounce {
+            0% { transform: translateY(-50%) scale(1); }
+            50% { transform: translateY(-50%) scale(1.2); }
+            100% { transform: translateY(-50%) scale(1); }
+        }
+
+        @keyframes emojiSpin {
+            0% { transform: scale(1) rotate(0deg); }
+            100% { transform: scale(1.2) rotate(360deg); }
+        }
+
+        @keyframes orbitRing {
+            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+            50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.05); }
+            100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div class="gradient-bg"></div>
+        <div class="grid"></div>
+    </div>
+    
+    <div class="particles-3d" id="particles-3d"></div>
+    
+    <div class="content-container">
+        <h1>Welcome to Our Project</h1>
+        <h2>Features</h2>
+        
+        <div class="features-container">
+            <ul>
+                <li data-emoji="🔍">
+                    <span class="emoji">🔍</span>
+                    <span class="text">Feature 1: Smart Disease Prediction</span>
+                </li>
+                <li data-emoji="📊">
+                    <span class="emoji">📊</span>
+                    <span class="text">Feature 2: Multiple Model Comparison</span>
+                </li>
+                <li data-emoji="⚙️">
+                    <span class="emoji">⚙️</span>
+                    <span class="text">Feature 3: Interactive Frontend for Input</span>
+                </li>
+                <li data-emoji="📡">
+                    <span class="emoji">📡</span>
+                    <span class="text">Feature 4: API Integration for Health Data</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="button-container">
+            <a href="{{ url_for('login') }}">
+                <button><span>Go to Login Page</span></button>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const contentContainer = document.querySelector('.content-container');
+            const features = document.querySelectorAll('li');
+            const button = document.querySelector('button');
+            const h1 = document.querySelector('h1');
+            const h2 = document.querySelector('h2');
+            
+            document.addEventListener('mousemove', (e) => {
+                const xAxis = (window.innerWidth / 2 - e.pageX) / 45;
+                const yAxis = (window.innerHeight / 2 - e.pageY) / 45;
+                
+                contentContainer.style.transform = `rotateY(${xAxis}deg) rotateX(${-yAxis}deg) translateZ(10px)`;
+                h1.style.transform = `translateZ(50px) translateX(${-xAxis}px) translateY(${-yAxis}px) rotateZ(${xAxis * 0.1}deg)`;
+                h2.style.transform = `translateZ(30px) translateX(${-xAxis * 0.5}px) translateY(${-yAxis * 0.5}px) rotateZ(${xAxis * 0.05}deg)`;
+                
+                features.forEach((feature, index) => {
+                    const offset = (index + 1) * 5;
+                    feature.style.transform = `translateZ(${20 + offset}px) translateX(${-xAxis * 0.8}px) translateY(${-yAxis * 0.8}px)`;
+                });
+                
+                button.style.transform = `translateZ(40px) translateX(${-xAxis * 1.2}px) translateY(${-yAxis * 1.2}px)`;
+            });
+            
+            document.addEventListener('mouseleave', () => {
+                contentContainer.style.transform = 'rotateY(0deg) rotateX(0deg) translateZ(0)';
+                h1.style.transform = 'translateZ(50px)';
+                h2.style.transform = 'translateZ(30px)';
+                features.forEach(feature => {
+                    feature.style.transform = 'translateZ(0) translateX(0)';
+                });
+                button.style.transform = 'translateZ(0) translateY(0)';
+            });
+            
+            createParticles3D();
+            
+            features.forEach(feature => {
+                feature.addEventListener('mouseenter', () => {
+                    feature.style.boxShadow = `0 15px 35px rgba(0, 0, 0, 0.3),
+                                              0 5px 15px rgba(76, 201, 240, 0.4),
+                                              0 0 20px rgba(76, 201, 240, 0.2)`;
+                });
+                
+                feature.addEventListener('mouseleave', () => {
+                    feature.style.boxShadow = `0 15px 25px rgba(0, 0, 0, 0.2),
+                                              0 5px 15px rgba(67, 97, 238, 0.1)`;
+                });
+            });
+
+            button.addEventListener('click', () => {
+                button.style.transform = `translateZ(40px) scale(0.95)`;
+                setTimeout(() => {
+                    button.style.transform = `translateZ(40px) scale(1)`;
+                }, 100);
+            });
+        });
+        
+        function createParticles3D() {
+            const container = document.getElementById('particles-3d');
+            const particleCount = 100;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle-3d';
+                
+                const size = Math.random() * 3 + 1;
+                const xPos = Math.random() * 100;
+                const yPos = Math.random() * 100;
+                const zPos = Math.random() * 500 - 250;
+                const opacity = Math.random() * 0.6 + 0.2;
+                
+                const colors = ['rgba(67, 97, 238,', 'rgba(114, 9, 183,', 'rgba(76, 201, 240,'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${xPos}vw`;
+                particle.style.top = `${yPos}vh`;
+                particle.style.background = `${color} ${opacity})`;
+                particle.style.boxShadow = `0 0 ${size * 2}px ${color} 1)`;
+                
+                const duration = Math.random() * 50 + 30;
+                const delay = Math.random() * 10;
+                
+                particle.style.transform = `translateZ(${zPos}px)`;
+                particle.style.animation = `floatIn3D ${duration}s infinite ${delay}s`;
+                
+                container.appendChild(particle);
+            }
+        }
+    </script>
+</body>
+</html>

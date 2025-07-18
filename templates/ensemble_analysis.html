@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ensemble Model Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 50px;
+            overflow-x: hidden;
+            perspective: 1500px; /* Enables 3D space */
+        }
+
+        .scene {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            position: relative;
+        }
+
+        .scene::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(white 1px, transparent 1px),
+                radial-gradient(white 1px, transparent 1px);
+            background-size: 50px 50px;
+            background-position: 0 0, 25px 25px;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 900px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            transform-style: preserve-3d;
+        }
+
+        h1 {
+            color: white;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 3rem;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 30px 0 20px;
+            font-size: 1.8rem;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #6a11cb 0%, #2575fc 100%);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transform-style: preserve-3d;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: white;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .graph-container {
+            padding: 20px;
+            background: linear-gradient(145deg, #6a11cb 0%, #2575fc 100%);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            transform-style: preserve-3d;
+        }
+
+        canvas {
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="scene">
+        <div class="container">
+            <h1>📊 Ensemble Model Analysis</h1>
+
+            <!-- Model Performance Metrics -->
+            <div class="card" data-section="metrics">
+                <h2>📌 Model Performance Metrics</h2>
+                <table>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                    {% for metric, value in model_metrics.items() %}
+                    <tr>
+                        <td>{{ metric }}</td>
+                        <td>{{ value|round(4) }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+
+            <!-- Disease Distribution -->
+            <div class="card" data-section="disease">
+                <h2>🦠 Disease Distribution</h2>
+                <table>
+                    <tr>
+                        <th>Disease</th>
+                        <th>Count</th>
+                    </tr>
+                    {% for disease, count in disease_counts.items() %}
+                    <tr>
+                        <td>{{ disease }}</td>
+                        <td>{{ count }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+
+            <!-- Symptom Weight Distribution Chart -->
+            <div class="graph-container" data-section="weights">
+                <h2>⚖ Symptom Weight Distribution</h2>
+                <canvas id="weightChart"></canvas>
+            </div>
+
+            <!-- Cross-Validation Scores -->
+            <div class="graph-container" data-section="cv">
+                <h2>🎯 Cross-Validation Scores</h2>
+                <canvas id="cvChart"></canvas>
+            </div>
+
+            <!-- Predictions Table -->
+            <div class="card" data-section="predictions">
+                <h2>🔍 Predictions</h2>
+                <table>
+                    <tr>
+                        <th>Actual</th>
+                        <th>Predicted</th>
+                    </tr>
+                    {% for row in predictions %}
+                    <tr>
+                        <td>{{ row.Actual }}</td>
+                        <td>{{ row.Predicted }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // 3D Card hover effects
+            const cards = document.querySelectorAll('.card, .graph-container');
+            
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = (y - centerY) / 20;
+                    const rotateY = -(x - centerX) / 20;
+                    
+                    card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(50px)`;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0px)';
+                });
+            });
+
+            // Initial load animations with Anime.js
+            anime({
+                targets: '.card, .graph-container',
+                translateY: [100, 0],
+                opacity: [0, 1],
+                rotateX: [-30, 0],
+                duration: 1000,
+                delay: anime.stagger(200, {start: 500}),
+                easing: 'easeOutElastic(1, .6)'
+            });
+
+            anime({
+                targets: 'h1',
+                translateY: [-50, 0],
+                opacity: [0, 1],
+                duration: 800,
+                easing: 'easeOutBack'
+            });
+
+            // Symptom Weight Distribution Chart (unchanged functionality)
+            let weightLabels = JSON.parse('{{ symptom_weights.keys() | list | tojson | safe }}');
+            let weightValues = JSON.parse('{{ symptom_weights.values() | list | tojson | safe }}');
+    
+            console.log("🔍 Symptom Weight Labels:", weightLabels);
+            console.log("🔍 Symptom Weight Values:", weightValues);
+    
+            if (weightLabels.length > 0 && weightValues.some(value => value > 0)) {
+                const weightChart = new Chart(document.getElementById("weightChart"), {
+                    type: 'bar',
+                    data: {
+                        labels: weightLabels,
+                        datasets: [{
+                            label: 'Symptom Weights',
+                            data: weightValues,
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            borderColor: 'rgba(255, 255, 255, 0.8)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            tooltip: { enabled: true },
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                ticks: { color: 'white' }
+                            },
+                            x: {
+                                ticks: { color: 'white' }
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.warn("⚠ No valid symptom weight data available!");
+                document.getElementById("weightChart").style.display = "none";
+            }
+        });
+    </script>
+</body>
+</html>
